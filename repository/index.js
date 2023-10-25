@@ -121,7 +121,11 @@ const UpdateUserBalance = async (transaction) => {
   const fromAddress = transaction.from;
   const usdtAmount = transaction.tokenAmount;
   if (isPending == false) {
-    await callIcoUpdateBalance(usdtAmount, fromAddress);
+    try {
+      await callIcoUpdateBalance(usdtAmount, fromAddress);
+    } catch (err) {
+      return;
+    }
   }
   const res = await inserUserTransaction(
     fromAddress,
@@ -195,7 +199,6 @@ const updateEndTime = async (time) => {
     return;
   }
   await cacheData();
-  await startCronJob();
   console.log("End time updated");
 };
 
