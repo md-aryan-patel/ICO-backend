@@ -11,6 +11,7 @@ const {
   getAllPendingTransaction,
   removeFromPending,
 } = require("../database");
+const { time } = require("console");
 
 const provider = new ethers.JsonRpcProvider(process.env.sepolia_network);
 const adminWallet = new ethers.Wallet(process.env.admin_private_key, provider);
@@ -148,6 +149,7 @@ const cacheData = async () => {
     Owner
   );
   console.log(res);
+  return res;
 };
 
 const stopListening = async (_chainId) => {
@@ -169,6 +171,32 @@ const getTransactionStatus = async (transactionHash) => {
     console.log(err);
     return -1;
   }
+};
+
+const updateStartTime = async (time) => {
+  try {
+    const res = await icoContract.changeStartTime(time);
+    await res.wait();
+  } catch (err) {
+    console.log(err);
+    return;
+  }
+  await cacheData();
+  await startCronJob();
+  console.log("Start time updated");
+};
+
+const updateEndTime = async (time) => {
+  try {
+    const res = await icoContract.changeEndTime(time);
+    await res.wait();
+  } catch (error) {
+    console.log(error);
+    return;
+  }
+  await cacheData();
+  await startCronJob();
+  console.log("End time updated");
 };
 
 const startCronJob = async () => {
@@ -204,4 +232,6 @@ module.exports = {
   cacheData,
   startCronJob,
   getTransactionStatus,
+  updateEndTime,
+  updateStartTime,
 };
