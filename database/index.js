@@ -54,6 +54,7 @@ const inserUserTransaction = async (
         usdt,
         isClaimed: false,
         transactionTime,
+        status: "pending",
       });
       console.log("Inserted...");
       return result;

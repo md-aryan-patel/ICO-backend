@@ -91,6 +91,7 @@ const FetchTransactionDetail = async (recipientAddress) => {
 const callIcoUpdateBalance = async (tokenAmount, sender) => {
   try {
     const result = await icoContract.updateBalance(tokenAmount, sender);
+    console.log(result);
     return result;
   } catch (err) {
     console.log(err);
@@ -158,6 +159,18 @@ const stopListening = async (_chainId) => {
   });
 };
 
+const getTransactionStatus = async (transactionHash) => {
+  try {
+    const receipt = await provider.getTransactionReceipt(transactionHash);
+    if (receipt === null) return 0;
+    if (receipt.status === 1) return 1;
+    else if (receipt.status === 0) return 2;
+  } catch (err) {
+    console.log(err);
+    return -1;
+  }
+};
+
 const startCronJob = async () => {
   const _cacheData = await getContractCacheData();
   const targetDate = new Date((_cacheData.startTime + 30) * 1000);
@@ -190,4 +203,5 @@ module.exports = {
   cacheData,
   cacheData,
   startCronJob,
+  getTransactionStatus,
 };
