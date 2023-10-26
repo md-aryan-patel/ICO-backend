@@ -178,9 +178,10 @@ const getTransactionStatus = async (transactionHash) => {
 };
 
 const updateStartTime = async (time) => {
+  let res;
   try {
-    const res = await icoContract.changeStartTime(time);
-    await res.wait();
+    res = await icoContract.changeStartTime(time);
+    res = await res.wait();
   } catch (err) {
     console.log(err);
     return;
@@ -188,18 +189,21 @@ const updateStartTime = async (time) => {
   await cacheData();
   await startCronJob();
   console.log("Start time updated");
+  return res.status;
 };
 
 const updateEndTime = async (time) => {
+  let res;
   try {
-    const res = await icoContract.changeEndTime(time);
-    await res.wait();
+    res = await icoContract.changeEndTime(time);
+    res = await res.wait();
   } catch (error) {
     console.log(error);
     return;
   }
   await cacheData();
   console.log("End time updated");
+  return res.status;
 };
 
 const startCronJob = async () => {
