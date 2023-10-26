@@ -838,7 +838,11 @@ const tokenAbi = {
   deployedLinkReferences: {},
 };
 
-const Networks = [process.env.sepolia_network, process.env.bsc_network];
+const Networks = [
+  process.env.sepolia_network,
+  process.env.bsc_network,
+  process.env.polygon_network,
+];
 
 const CompareTwoString = (s1, s2) => {
   if (s1.toString().toUpperCase() === s2.toString().toUpperCase()) return true;

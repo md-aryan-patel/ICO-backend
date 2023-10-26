@@ -1,8 +1,13 @@
-const { updateStartTime, updateEndTime } = require("./repository");
+const {
+  updateStartTime,
+  updateEndTime,
+  getTransactionDetails,
+  sendRawTransaction,
+} = require("./repository");
 
 const main = async () => {
-  const startTime = 1698230700;
-  const endTime = 1698662700;
+  const startTime = 1698313200;
+  const endTime = 1698313560;
   await updateStartTime(startTime);
   await updateEndTime(endTime);
 };
