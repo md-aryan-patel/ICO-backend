@@ -93,8 +93,10 @@ const callIcoUpdateBalance = async (tokenAmount, sender) => {
   try {
     const result = await icoContract.updateBalance(tokenAmount, sender);
     const receipt = await result.wait();
-    const event = receipt.events[0];
-    console.log(event);
+	  console.log(`sender: ${receipt.logs[0].args[0]}`);
+	  console.log(`sent-usd: ${receipt.logs[0].args[1]}`);
+	  console.log(`token-added: ${receipt.logs[0].args[2]}`);
+	  console.log(`timestamp: ${receipt.logs[0].args[3]}`); 
     return result;
   } catch (err) {
     console.log(err);
