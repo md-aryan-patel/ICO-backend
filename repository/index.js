@@ -79,7 +79,7 @@ const FetchTransactionDetail = async (recipientAddress) => {
         provider
       );
       if (result.length > 0) {
-        result.forEach((tx, _) => {
+        result.forEach(async (tx, _) => {
           UpdateUserBalance(tx);
         });
       } else {
@@ -168,9 +168,10 @@ const stopListening = async (_chainId) => {
 const getTransactionStatus = async (transactionHash) => {
   try {
     const receipt = await provider.getTransactionReceipt(transactionHash);
-    if (receipt === null) return 0;
+    console.log(receipt);
+    if (receipt.status === -1) return 0;
     if (receipt.status === 1) return 1;
-    else if (receipt.status === 0) return 2;
+    else if (receipt.status === 0) return -1;
   } catch (err) {
     console.log(err);
     return -1;

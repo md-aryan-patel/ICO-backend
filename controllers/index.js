@@ -30,9 +30,23 @@ exports.getTransactionStatus = async (req, res) => {
 exports.changeStartTime = async (req, res) => {
   let st = req.body.startTime;
   let et = req.body.endTime;
-  const startTimeRes = await updateStartTime(st);
-  const endTimeRes = await updateEndTime(et);
-  res.send({ startTimeRes, endTimeRes });
+  let startTimeRes, endTimeRes;
+  let error = "invalid values";
+  if (st === 0 && et === 0) {
+    res.send({ error });
+  } else if (st === 0) {
+    endTimeRes = await updateEndTime(et);
+    res.send({ endTimeRes });
+    return;
+  } else if (et === 0) {
+    startTimeRes = await updateStartTime(st);
+    res.send({ startTimeRes });
+    return;
+  } else {
+    startTimeRes = await updateStartTime(st);
+    endTimeRes = await updateEndTime(et);
+    res.send({ startTimeRes, endTimeRes });
+  }
 };
 
 exports.stopListening = async (req, res) => {
