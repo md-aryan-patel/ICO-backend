@@ -92,7 +92,8 @@ const FetchTransactionDetail = async (recipientAddress) => {
 const callIcoUpdateBalance = async (tokenAmount, sender) => {
   try {
     const result = await icoContract.updateBalance(tokenAmount, sender);
-    console.log(result);
+    const receipt = await result.wait();
+    console.log(receipt);
     return result;
   } catch (err) {
     console.log(err);
