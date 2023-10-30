@@ -2,6 +2,7 @@ const { icoAbi } = require("../helpers/index");
 const { erc20Abi, Networks, CompareTwoString } = require("../helpers");
 const CronJob = require("cron").CronJob;
 const transferSelector = "0xa9059cbb";
+const claimSelector = "0x1698755f";
 const ethers = require("ethers");
 require("dotenv").config();
 const {
@@ -191,6 +192,7 @@ const waitForTransactionConfirmation = async (data) => {
 
 const getTransactionStatus = async (transactionHash) => {
   try {
+    const getTrx = await provider.getTransaction(transactionHash);
     const receipt = await provider.getTransactionReceipt(transactionHash);
     if (receipt.status === 1) return 1;
     else if (receipt.status === 0) return 0;
