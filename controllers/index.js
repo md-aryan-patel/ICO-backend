@@ -3,6 +3,7 @@ const {
   FetchTransactionDetail,
   stopListening,
   getTransactionStatus,
+  getTransactionInvestor,
   updateStartTime,
   updateEndTime,
 } = require("../repository/index");
@@ -24,6 +25,16 @@ exports.getTransaction = async (req, res) => {
 exports.getTransactionStatus = async (req, res) => {
   let hash = req.params.hash;
   const status = await getTransactionStatus(hash);
+  res.send({ status });
+};
+
+exports.getInvestmentStatus = async (req, res) => {
+  let hash = req.params.hash;
+  let status = 0;
+  const result = await getTransactionInvestor(hash);
+  if (result !== null) {
+    status = result;
+  }
   res.send({ status });
 };
 

@@ -22,42 +22,46 @@ const userDatabase = "icoInvestors";
 const db = client.db(userDatabase);
 
 const inserUserTransaction = async (
-  userAddress,
-  usdt,
-  transactionTime,
-  isPending
+  transactionHash,
+  fromAddress,
+  usdtAmount,
+  timestamp,
+  isPending,
+  status
 ) => {
   let collection;
   try {
-    if (isPending) collection = db.collection("pending-tx");
-    else collection = db.collection("ico-user");
-    if (
-      (
-        await collection.countDocuments(
-          { userAddress: userAddress },
-          { limit: 1 }
-        )
-      ).toString() === "1"
-    ) {
-      const user = await collection.findOne({ userAddress: userAddress });
-      const updatedBalance = user.usdt + usdt;
-      const updateUserBalance = await collection.updateOne(
-        { userAddress: userAddress },
-        { $set: { usdt: updatedBalance } }
+    if (isPending) {
+      collection = db.collection("pending-tx");
+      const result = await collection.updateOne(
+        { transactionHash: transactionHash },
+        { $set: { status: status } }
       );
-      console.log("Updated...");
-      return updateUserBalance;
+      return result;
     } else {
+      collection = db.collection("ico-user");
       const result = await collection.insertOne({
-        userAddress,
-        usdt,
-        isClaimed: false,
-        transactionTime,
-        status: "pending",
+        transactionHash,
+        fromAddress,
+        usdtAmount,
+        timestamp,
+        status,
       });
       console.log("Inserted...");
+      removeFromPendinghash(transactionHash);
       return result;
     }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const insertUserInPending = async (data) => {
+  try {
+    let collection = db.collection("pending-tx");
+    const result = await collection.insertOne(data);
+    console.log("pending transaction inserted");
+    return result;
   } catch (err) {
     console.log(err);
   }
@@ -147,9 +151,26 @@ const getAllPendingTransaction = async () => {
   return allTx;
 };
 
-const removeFromPending = async (_id) => {
+const getTransactionStatusInvestors = async (trxHash) => {
   try {
-    const query = { _id: _id };
+    const pendingCollection = db.collection("pending-tx");
+    const icoCollection = db.collection("ico-user");
+    const pendingUser = await pendingCollection.findOne({
+      transactionHash: trxHash,
+    });
+    const icoUser = await icoCollection.findOne({
+      transactionHash: trxHash,
+    });
+    if (icoUser === null) return pendingUser;
+    else return icoUser;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const removeFromPendinghash = async (hash) => {
+  try {
+    const query = { transactionHash: hash };
     const collection = db.collection("pending-tx");
     const res = await collection.deleteOne(query);
     return res;
@@ -160,9 +181,10 @@ const removeFromPending = async (_id) => {
 
 module.exports = {
   cacheContractData,
+  getTransactionStatusInvestors,
   getContractCacheData,
   inserUserTransaction,
   getAllPendingTransaction,
-  removeFromPending,
+  insertUserInPending,
   client,
 };

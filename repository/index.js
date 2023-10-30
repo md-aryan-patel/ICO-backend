@@ -9,9 +9,9 @@ const {
   getContractCacheData,
   inserUserTransaction,
   getAllPendingTransaction,
-  removeFromPending,
+  insertUserInPending,
+  getTransactionStatusInvestors,
 } = require("../database");
-const { time } = require("console");
 
 const provider = new ethers.JsonRpcProvider(process.env.sepolia_network);
 const adminWallet = new ethers.Wallet(process.env.admin_private_key, provider);
@@ -103,43 +103,6 @@ const callIcoUpdateBalance = async (tokenAmount, sender) => {
   }
 };
 
-const UpdateUserBalance = async (transaction) => {
-  if (
-    transaction.to.toString() !== process.env.usdt_address &&
-    !CompareTwoString(transaction.toAddress, process.env.receiver_address)
-  ) {
-    console.log("Returning...");
-    console.log(
-      CompareTwoString(transaction.toAddress, process.env.receiver_address)
-    );
-    return;
-  }
-  const currentDate = new Date();
-  const _cacheData = await getContractCacheData();
-  const icoStartTime = new Date(_cacheData.startTime * 1000);
-
-  let isPending = false;
-  if (icoStartTime.getTime() > currentDate.getTime()) {
-    isPending = true;
-  }
-  const fromAddress = transaction.from;
-  const usdtAmount = transaction.tokenAmount;
-  if (isPending == false) {
-    try {
-      await callIcoUpdateBalance(usdtAmount, fromAddress);
-    } catch (err) {
-      return;
-    }
-  }
-  const res = await inserUserTransaction(
-    fromAddress,
-    usdtAmount,
-    currentDate.getTime(),
-    isPending
-  );
-  console.log(res);
-};
-
 const cacheData = async () => {
   const tokenName = "CFNC";
   const maxToken = await icoContract.maxToken();
@@ -169,17 +132,91 @@ const stopListening = async (_chainId) => {
   });
 };
 
+const UpdateUserBalance = async (transaction) => {
+  if (
+    transaction.to.toString() !== process.env.usdt_address &&
+    !CompareTwoString(transaction.toAddress, process.env.receiver_address)
+  ) {
+    console.log("Returning...");
+    console.log(
+      CompareTwoString(transaction.toAddress, process.env.receiver_address)
+    );
+    return;
+  }
+  const transactionHash = transaction.hash;
+  const currentDate = new Date();
+  const fromAddress = transaction.from;
+  const usdtAmount = transaction.tokenAmount;
+  const data = {
+    transactionHash,
+    fromAddress,
+    usdtAmount,
+    timestamp: currentDate.getTime(),
+    status: 0,
+  };
+  await insertUserInPending(data);
+  waitForTransactionConfirmation(data);
+};
+
+const waitForTransactionConfirmation = async (data) => {
+  const status = await getTransactionStatus(data.transactionHash);
+  const _cacheData = await getContractCacheData();
+  const icoStartTime = new Date(_cacheData.startTime * 1000);
+  const currentDate = new Date();
+  let isPending = false;
+  if (icoStartTime.getTime() > currentDate.getTime()) isPending = true;
+  if (isPending === false && status === 1) {
+    const result = await callIcoUpdateBalance(
+      data.usdtAmount,
+      data.fromAddress
+    );
+    const receipt = await result.wait();
+    if (receipt.status === 1)
+      await inserUserTransaction(
+        data.transactionHash,
+        data.fromAddress,
+        data.usdtAmount,
+        data.timestamp,
+        isPending,
+        2
+      );
+    else return;
+  } else if (isPending === true && status === 1) {
+    await inserUserTransaction(
+      data.transactionHash,
+      data.fromAddress,
+      data.usdtAmount,
+      data.timestamp,
+      isPending,
+      1
+    );
+  } else if (status === 0) {
+    await inserUserTransaction(
+      data.transactionHash,
+      data.fromAddress,
+      data.usdtAmount,
+      data.timestamp,
+      true,
+      -1
+    );
+  }
+};
+
 const getTransactionStatus = async (transactionHash) => {
   try {
     const receipt = await provider.getTransactionReceipt(transactionHash);
     console.log(receipt);
-    if (receipt.status === -1) return 0;
     if (receipt.status === 1) return 1;
-    else if (receipt.status === 0) return -1;
+    else if (receipt.status === 0) return 0;
   } catch (err) {
     console.log(err);
     return -1;
   }
+};
+
+const getTransactionInvestor = async (hash) => {
+  const user = await getTransactionStatusInvestors(hash);
+  return user;
 };
 
 const updateStartTime = async (time) => {
@@ -219,13 +256,14 @@ const startCronJob = async () => {
     async () => {
       const allPendingTx = await getAllPendingTransaction();
       for (const tx of allPendingTx) {
-        await callIcoUpdateBalance(tx.usdt, tx.userAddress.toString());
-        await removeFromPending(tx._id);
+        await callIcoUpdateBalance(tx.usdtAmount, tx.fromAddress.toString());
         await inserUserTransaction(
-          tx.userAddress,
-          tx.usdt,
-          tx.transactionTime,
-          false
+          tx.transactionHash,
+          tx.fromAddress,
+          tx.usdtAmount,
+          tx.timestamp,
+          false,
+          2
         );
       }
       job.stop();
@@ -241,9 +279,9 @@ module.exports = {
   FetchTransactionDetail,
   stopListening,
   cacheData,
-  cacheData,
   startCronJob,
   getTransactionStatus,
   updateEndTime,
   updateStartTime,
+  getTransactionInvestor,
 };
