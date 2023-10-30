@@ -97,7 +97,9 @@ const callIcoUpdateBalance = async (tokenAmount, sender) => {
     console.log(`sent-usd: ${receipt.logs[0].args[1]}`);
     console.log(`token-added: ${receipt.logs[0].args[2]}`);
     console.log(`timestamp: ${receipt.logs[0].args[3]}`);
-    return result;
+    console.log("Printing receipt");
+    console.log(receipt);
+    return receipt.status;
   } catch (err) {
     console.log(err);
   }
@@ -159,12 +161,13 @@ const UpdateUserBalance = async (transaction) => {
 };
 
 const waitForTransactionConfirmation = async (data) => {
+  console.log(data);
   const status = await getTransactionStatus(data.transactionHash);
   const _cacheData = await getContractCacheData();
   const icoStartTime = new Date(_cacheData.startTime * 1000);
   const currentDate = new Date();
   let isPending = true;
-  const currStatus = 0;
+  let currStatus = 0;
   if (icoStartTime.getTime() > currentDate.getTime() && status === 1) {
     currStatus = 1;
   } else if (icoStartTime.getTime() <= currentDate.getTime() && status === 1) {
@@ -174,10 +177,8 @@ const waitForTransactionConfirmation = async (data) => {
       data.usdtAmount,
       data.fromAddress
     );
-    const receipt = await result.wait();
-    if (receipt.status === 0) throw Error("Transaction failed");
+    if (result === 0) return;
   } else if (status === 0) currStatus = -1;
-
   await inserUserTransaction(
     data.transactionHash,
     data.fromAddress,
@@ -191,7 +192,6 @@ const waitForTransactionConfirmation = async (data) => {
 const getTransactionStatus = async (transactionHash) => {
   try {
     const receipt = await provider.getTransactionReceipt(transactionHash);
-    console.log(receipt);
     if (receipt.status === 1) return 1;
     else if (receipt.status === 0) return 0;
   } catch (err) {
