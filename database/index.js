@@ -20,6 +20,8 @@ const userDatabase = "icoInvestors";
   }
 })();
 const db = client.db(userDatabase);
+const pendingCollection = db.collection(process.env.pendingCollection);
+const icoCollection = db.collection(process.env.icoCollection);
 
 const inserUserTransaction = async (
   transactionHash,
@@ -29,18 +31,15 @@ const inserUserTransaction = async (
   isPending,
   status
 ) => {
-  let collection;
   try {
     if (isPending) {
-      collection = db.collection("pending-tx");
-      const result = await collection.updateOne(
+      const result = await pendingCollection.updateOne(
         { transactionHash: transactionHash },
         { $set: { status: status } }
       );
       return result;
     } else {
-      collection = db.collection("ico-user");
-      const result = await collection.insertOne({
+      const result = await icoCollection.insertOne({
         transactionHash,
         fromAddress,
         usdtAmount,
@@ -58,8 +57,7 @@ const inserUserTransaction = async (
 
 const insertUserInPending = async (data) => {
   try {
-    let collection = db.collection("pending-tx");
-    const result = await collection.insertOne(data);
+    const result = await pendingCollection.insertOne(data);
     console.log("pending transaction inserted");
     return result;
   } catch (err) {
@@ -143,8 +141,7 @@ const getContractCacheData = async () => {
 const getAllPendingTransaction = async () => {
   let allTx;
   try {
-    const collection = db.collection("pending-tx");
-    allTx = await collection.find({}).toArray();
+    allTx = await pendingCollection.find({}).toArray();
   } catch (err) {
     console.log(err);
   }
@@ -153,8 +150,6 @@ const getAllPendingTransaction = async () => {
 
 const getTransactionStatusInvestors = async (trxHash) => {
   try {
-    const pendingCollection = db.collection("pending-tx");
-    const icoCollection = db.collection("ico-user");
     const pendingUser = await pendingCollection.findOne({
       transactionHash: trxHash,
     });
@@ -171,8 +166,7 @@ const getTransactionStatusInvestors = async (trxHash) => {
 const removeFromPendinghash = async (hash) => {
   try {
     const query = { transactionHash: hash };
-    const collection = db.collection("pending-tx");
-    const res = await collection.deleteOne(query);
+    const res = await pendingCollection.deleteOne(query);
     return res;
   } catch (err) {
     console.log(err);

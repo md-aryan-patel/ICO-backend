@@ -163,43 +163,29 @@ const waitForTransactionConfirmation = async (data) => {
   const _cacheData = await getContractCacheData();
   const icoStartTime = new Date(_cacheData.startTime * 1000);
   const currentDate = new Date();
-  let isPending = false;
-  if (icoStartTime.getTime() > currentDate.getTime()) isPending = true;
-  if (isPending === false && status === 1) {
+  let isPending = true;
+  const currStatus = 0;
+  if (icoStartTime.getTime() > currentDate.getTime() && status === 1) {
+    currStatus = 1;
+  } else if (icoStartTime.getTime() <= currentDate.getTime() && status === 1) {
+    currStatus = 2;
+    isPending = false;
     const result = await callIcoUpdateBalance(
       data.usdtAmount,
       data.fromAddress
     );
     const receipt = await result.wait();
-    if (receipt.status === 1)
-      await inserUserTransaction(
-        data.transactionHash,
-        data.fromAddress,
-        data.usdtAmount,
-        data.timestamp,
-        isPending,
-        2
-      );
-    else return;
-  } else if (isPending === true && status === 1) {
-    await inserUserTransaction(
-      data.transactionHash,
-      data.fromAddress,
-      data.usdtAmount,
-      data.timestamp,
-      isPending,
-      1
-    );
-  } else if (status === 0) {
-    await inserUserTransaction(
-      data.transactionHash,
-      data.fromAddress,
-      data.usdtAmount,
-      data.timestamp,
-      true,
-      -1
-    );
-  }
+    if (receipt.status === 0) throw Error("Transaction failed");
+  } else if (status === 0) currStatus = -1;
+
+  await inserUserTransaction(
+    data.transactionHash,
+    data.fromAddress,
+    data.usdtAmount,
+    data.timestamp,
+    isPending,
+    currStatus
+  );
 };
 
 const getTransactionStatus = async (transactionHash) => {
@@ -256,6 +242,7 @@ const startCronJob = async () => {
     async () => {
       const allPendingTx = await getAllPendingTransaction();
       for (const tx of allPendingTx) {
+        if (tx.status === 0 || tx.status === -1) return;
         await callIcoUpdateBalance(tx.usdtAmount, tx.fromAddress.toString());
         await inserUserTransaction(
           tx.transactionHash,
