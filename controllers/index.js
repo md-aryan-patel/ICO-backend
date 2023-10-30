@@ -6,6 +6,7 @@ const {
   getTransactionInvestor,
   updateStartTime,
   updateEndTime,
+  getClaimStatus,
 } = require("../repository/index");
 
 exports.hello = async (req, res) => {
@@ -24,7 +25,7 @@ exports.getTransaction = async (req, res) => {
 
 exports.getTransactionStatus = async (req, res) => {
   let hash = req.params.hash;
-  const status = await getTransactionStatus(hash);
+  const status = await getClaimStatus(hash);
   res.send({ status });
 };
 

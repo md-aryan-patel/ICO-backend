@@ -3,6 +3,7 @@ const {
   updateStartTime,
   updateEndTime,
   getTransactionStatus,
+  getClaimStatus,
 } = require("./repository");
 
 const { usdtAbi } = require("./helpers/index");
@@ -44,6 +45,30 @@ const getInvestorsStatus = async () => {
     );
     console.log(await result.json());
   }, 1500);
+};
+
+const getStatusClaim = async () => {
+  const provider = new ethers.JsonRpcProvider(process.env.sepolia_network);
+  const wallet = new ethers.Wallet(process.env.admin_private_key, provider);
+  const contract = new ethers.Contract(
+    process.env.usdt_address,
+    usdtAbi.abi,
+    provider
+  );
+  const usdtContract = contract.connect(wallet);
+  console.log(
+    await usdtContract.balanceOf("0x80A344d8095d099bb72e6298aA8bA2C9E82A4Cbe")
+  );
+  const receipt = await usdtContract.transfer(
+    process.env.receiver_address,
+    10000
+  );
+  console.log(`Receipt hash: ${receipt.hash}`);
+
+  setInterval(async () => {
+    const result = await getClaimStatus(receipt.hash);
+    console.log(result);
+  }, 1200);
 };
 
 getInvestorsStatus().catch((err) => {

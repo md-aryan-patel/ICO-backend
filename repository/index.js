@@ -192,10 +192,22 @@ const waitForTransactionConfirmation = async (data) => {
 
 const getTransactionStatus = async (transactionHash) => {
   try {
-    const getTrx = await provider.getTransaction(transactionHash);
     const receipt = await provider.getTransactionReceipt(transactionHash);
     if (receipt.status === 1) return 1;
-    else if (receipt.status === 0) return 0;
+    else if (receipt.status === 0) return -1;
+  } catch (err) {
+    console.log(err);
+    return 0;
+  }
+};
+
+const getClaimStatus = async (transactionHash) => {
+  try {
+    const result = await provider.getTransaction(transactionHash);
+    if (result.blockHash === null || result.blockNumber === null) return 0;
+    const receipt = await result.wait();
+    if (receipt.status === 1) return 1;
+    return -1;
   } catch (err) {
     console.log(err);
     return -1;
@@ -269,6 +281,7 @@ module.exports = {
   stopListening,
   cacheData,
   startCronJob,
+  getClaimStatus,
   getTransactionStatus,
   updateEndTime,
   updateStartTime,
