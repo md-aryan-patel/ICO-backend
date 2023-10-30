@@ -34,6 +34,8 @@ exports.getInvestmentStatus = async (req, res) => {
   const result = await getTransactionInvestor(hash);
   if (result !== null) {
     status = result;
+  } else {
+    status = result.status;
   }
   res.send({ status });
 };

@@ -39,7 +39,7 @@ const getInvestorsStatus = async () => {
   );
   setInterval(async () => {
     const result = await fetch(
-      `http://localhost:8080/transaction/status/investment/${receipt.hash}`
+      `http://143.244.136.92:8080/transaction/status/investment/${receipt.hash}`
     );
     console.log(await result.json());
   }, 1500);
