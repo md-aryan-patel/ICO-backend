@@ -24,9 +24,7 @@ exports.getTransaction = async (req, res) => {
 
 exports.getTransactionStatus = async (req, res) => {
   let hash = req.params.hash;
-  let status = 0;
-  const result = await getTransactionStatus(hash);
-  if (result !== null) status = result.status;
+  const status = await getTransactionStatus(hash);
   res.send({ status });
 };
 
