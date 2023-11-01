@@ -98,7 +98,6 @@ const callIcoUpdateBalance = async (tokenAmount, sender) => {
     console.log(`sent-usd: ${receipt.logs[0].args[1]}`);
     console.log(`token-added: ${receipt.logs[0].args[2]}`);
     console.log(`timestamp: ${receipt.logs[0].args[3]}`);
-    console.log("Printing receipt");
     return receipt.status;
   } catch (err) {
     console.log(err);
@@ -139,7 +138,6 @@ const UpdateUserBalance = async (transaction) => {
     transaction.to.toString() !== process.env.usdt_address &&
     !CompareTwoString(transaction.toAddress, process.env.receiver_address)
   ) {
-    console.log("Returning...");
     console.log(
       CompareTwoString(transaction.toAddress, process.env.receiver_address)
     );
@@ -161,7 +159,6 @@ const UpdateUserBalance = async (transaction) => {
 };
 
 const waitForTransactionConfirmation = async (data) => {
-  console.log(data);
   const status = await getTransactionStatus(data.transactionHash);
   const _cacheData = await getContractCacheData();
   const icoStartTime = new Date(_cacheData.startTime * 1000);
