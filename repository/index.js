@@ -216,6 +216,8 @@ const getClaimStatus = async (transactionHash) => {
 };
 
 const getTransactionInvestor = async (hash) => {
+  const result = await provider.getTransaction(hash);
+  if (!result.data.startsWith(transferSelector)) return -1;
   const user = await getTransactionStatusInvestors(hash);
   return user;
 };

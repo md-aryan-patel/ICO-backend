@@ -160,6 +160,7 @@ const getTransactionStatusInvestors = async (trxHash) => {
     else return icoUser;
   } catch (err) {
     console.log(err);
+    return null;
   }
 };
 
