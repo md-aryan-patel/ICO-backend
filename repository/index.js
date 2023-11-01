@@ -201,7 +201,7 @@ const getTransactionStatus = async (transactionHash) => {
   }
 };
 
-const getClaimStatus = async (transactionHash) => {
+const getTransactionClaim = async (transactionHash) => {
   try {
     const result = await provider.getTransaction(transactionHash);
     if (!result.data.startsWith(claimSelector)) return -1;
@@ -284,8 +284,7 @@ module.exports = {
   stopListening,
   cacheData,
   startCronJob,
-  getClaimStatus,
-  getTransactionStatus,
+  getTransactionClaim,
   updateEndTime,
   updateStartTime,
   getTransactionInvestor,

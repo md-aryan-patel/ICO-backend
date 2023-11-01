@@ -2,11 +2,10 @@ require("dotenv").config();
 const {
   FetchTransactionDetail,
   stopListening,
-  getTransactionStatus,
   getTransactionInvestor,
   updateStartTime,
   updateEndTime,
-  getClaimStatus,
+  getTransactionClaim,
 } = require("../repository/index");
 
 exports.hello = async (req, res) => {
@@ -23,9 +22,9 @@ exports.getTransaction = async (req, res) => {
   res.send("listening to block...");
 };
 
-exports.getTransactionStatus = async (req, res) => {
+exports.getClaimStatus = async (req, res) => {
   let hash = req.params.hash;
-  const status = await getClaimStatus(hash);
+  const status = await getTransactionClaim(hash);
   res.send({ status });
 };
 

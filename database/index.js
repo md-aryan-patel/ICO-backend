@@ -22,6 +22,7 @@ const userDatabase = "icoInvestors";
 const db = client.db(userDatabase);
 const pendingCollection = db.collection(process.env.pendingCollection);
 const icoCollection = db.collection(process.env.icoCollection);
+const cacheCollection = db.collection(process.env.cacheCollection);
 
 const inserUserTransaction = async (
   transactionHash,
@@ -81,14 +82,10 @@ const cacheContractData = async (
     endTime,
     owner,
   };
-
-  console.log(startTime);
-
-  const collection = db.collection("cache-data");
   let res;
 
   try {
-    res = await collection.countDocuments(
+    res = await cacheCollection.countDocuments(
       { tokenName: tokenName },
       { limit: 1 }
     );
@@ -99,7 +96,7 @@ const cacheContractData = async (
   if (res && res === 1) {
     try {
       console.log("updating...");
-      const updatedDoc = await collection.updateOne(
+      const updatedDoc = await cacheCollection.updateOne(
         { tokenName: tokenName },
         {
           $set: {
@@ -118,7 +115,7 @@ const cacheContractData = async (
     }
   } else {
     try {
-      const insertedDoc = await collection.insertOne(data);
+      const insertedDoc = await cacheCollection.insertOne(data);
       return insertedDoc;
     } catch (err) {
       console.log(err);
@@ -129,9 +126,8 @@ const cacheContractData = async (
 const getContractCacheData = async () => {
   const query = { tokenName: "CFNC" };
   let res;
-  const collection = db.collection("cache-data");
   try {
-    res = await collection.findOne(query);
+    res = await cacheCollection.findOne(query);
   } catch (err) {
     console.log(err);
   }
