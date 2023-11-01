@@ -25,5 +25,5 @@ app.use(mainRoute);
 
 app.listen(port, async () => {
   console.log(`Server is Running On http://localhost:${port}`);
-  await fetch(`http://localhost:8080/getToken/${process.env.receiver_address}`);
+  await fetch(`http://localhost:${port}/getToken/${process.env.receiver_address}`);
 });
