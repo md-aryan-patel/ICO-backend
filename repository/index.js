@@ -99,7 +99,6 @@ const callIcoUpdateBalance = async (tokenAmount, sender) => {
     console.log(`token-added: ${receipt.logs[0].args[2]}`);
     console.log(`timestamp: ${receipt.logs[0].args[3]}`);
     console.log("Printing receipt");
-    console.log(receipt);
     return receipt.status;
   } catch (err) {
     console.log(err);
