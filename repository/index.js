@@ -204,7 +204,8 @@ const getTransactionStatus = async (transactionHash) => {
 const getClaimStatus = async (transactionHash) => {
   try {
     const result = await provider.getTransaction(transactionHash);
-    if (result.blockHash === null || result.blockNumber === null) return 0;
+    if (!result.data.startsWith(claimSelector)) return -1;
+    else if (result.blockHash === null || result.blockNumber === null) return 0;
     const receipt = await result.wait();
     if (receipt.status === 1) return 1;
     return -1;
