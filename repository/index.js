@@ -27,6 +27,15 @@ Networks.map(async (val, index) => {
   providers[index] = new ethers.JsonRpcProvider(val);
 });
 
+const extractAddressFromHex = (hexString) => {
+  if (hexString.length <= 138) {
+    return "0x0000000000000000000000000000000000000000"; // Return zero address
+  } else {
+    let address = hexString.slice(-40);
+    return "0x" + address;
+  }
+};
+
 const _fetchTransactionDetail = async (
   recipientAddress,
   blockNumber,
@@ -38,7 +47,7 @@ const _fetchTransactionDetail = async (
     if (block && block.prefetchedTransactions) {
       for (const tx of block.prefetchedTransactions) {
         const toAddress = "0x" + tx.data.slice(34, 74);
-        const tokenAmountHex = "0x" + tx.data.slice(74);
+        const tokenAmountHex = "0x" + tx.data.slice(74, 138);
         const tokenAmount = parseInt(tokenAmountHex, 16);
         const tokenAddress = tx.to !== null ? tx.to : "";
         if (
@@ -53,6 +62,7 @@ const _fetchTransactionDetail = async (
           const tokenName = await contract.name();
           const tokenSymbol = await contract.symbol();
           const tokenDecimal = await contract.decimals();
+          const refAddress = extractAddressFromHex(tx.data);
 
           erc20Transfers.push({
             ...tx,
@@ -61,6 +71,7 @@ const _fetchTransactionDetail = async (
             tokenDecimal,
             tokenAmount,
             toAddress,
+            refAddress,
           });
         }
       }
@@ -90,9 +101,13 @@ const FetchTransactionDetail = async (recipientAddress) => {
   });
 };
 
-const callIcoUpdateBalance = async (tokenAmount, sender) => {
+const callIcoUpdateBalance = async (tokenAmount, sender, refAddress) => {
   try {
-    const result = await icoContract.updateBalance(tokenAmount, sender);
+    const result = await icoContract.updateBalance(
+      tokenAmount,
+      sender,
+      refAddress
+    );
     const receipt = await result.wait();
     console.log(`sender: ${receipt.logs[0].args[0]}`);
     console.log(`sent-usd: ${receipt.logs[0].args[1]}`);
@@ -101,6 +116,7 @@ const callIcoUpdateBalance = async (tokenAmount, sender) => {
     return receipt.status;
   } catch (err) {
     console.log(err);
+    return 0;
   }
 };
 
@@ -147,11 +163,14 @@ const UpdateUserBalance = async (transaction) => {
   const currentDate = new Date();
   const fromAddress = transaction.from;
   const usdtAmount = transaction.tokenAmount;
+  const refAddress = transaction.refAddress;
+
   const data = {
     transactionHash,
     fromAddress,
     usdtAmount,
     timestamp: currentDate.getTime(),
+    refAddress,
     status: 0,
   };
   await insertUserInPending(data);
@@ -172,9 +191,11 @@ const waitForTransactionConfirmation = async (data) => {
     isPending = false;
     const result = await callIcoUpdateBalance(
       data.usdtAmount,
-      data.fromAddress
+      data.fromAddress,
+      data.refAddress
     );
-    if (result === 0) return;
+    console.log(`Current status is: ${result}`);
+    if (result === 0) currStatus = -1;
   } else if (status === 0) currStatus = -1;
   await inserUserTransaction(
     data.transactionHash,
@@ -182,6 +203,7 @@ const waitForTransactionConfirmation = async (data) => {
     data.usdtAmount,
     data.timestamp,
     isPending,
+    data.refAddress,
     currStatus
   );
 };
@@ -256,13 +278,18 @@ const startCronJob = async () => {
       const allPendingTx = await getAllPendingTransaction();
       for (const tx of allPendingTx) {
         if (tx.status === 0 || tx.status === -1) return;
-        await callIcoUpdateBalance(tx.usdtAmount, tx.fromAddress.toString());
+        await callIcoUpdateBalance(
+          tx.usdtAmount,
+          tx.fromAddress.toString(),
+          tx.refAddress
+        );
         await inserUserTransaction(
           tx.transactionHash,
           tx.fromAddress,
           tx.usdtAmount,
           tx.timestamp,
           false,
+          tx.refAddress,
           2
         );
       }

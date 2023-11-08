@@ -1,3 +1,6 @@
 .env
 node_modules
 script.js
+index.html
+metamask_script.js
+temp.*

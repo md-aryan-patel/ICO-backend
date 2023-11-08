@@ -30,6 +30,7 @@ const inserUserTransaction = async (
   usdtAmount,
   timestamp,
   isPending,
+  refAddress,
   status
 ) => {
   try {
@@ -45,6 +46,7 @@ const inserUserTransaction = async (
         fromAddress,
         usdtAmount,
         timestamp,
+        refAddress,
         status,
       });
       console.log("Inserted...");
