@@ -126,7 +126,7 @@ const cacheData = async () => {
   const pricePerToken = await icoContract.pricePerToken();
   const startTime = await icoContract.startTime();
   const endTime = await icoContract.endTime();
-  const Owner = await icoContract.Owner();
+  const Owner = await icoContract.owner();
 
   const res = await cacheContractData(
     tokenName,
