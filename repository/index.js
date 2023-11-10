@@ -1,4 +1,4 @@
-const { icoAbi } = require("../helpers/index");
+const { icoAbi, usdtAbi } = require("../helpers/index");
 const { erc20Abi, Networks, CompareTwoString } = require("../helpers");
 const CronJob = require("cron").CronJob;
 const transferSelector = "0xa9059cbb";
@@ -12,6 +12,7 @@ const {
   getAllPendingTransaction,
   insertUserInPending,
   getTransactionStatusInvestors,
+  changeEndTimeInCache,
 } = require("../database");
 
 const provider = new ethers.JsonRpcProvider(process.env.sepolia_network);
@@ -20,6 +21,9 @@ const adminWallet = new ethers.Wallet(process.env.admin_private_key, provider);
 const ico = new ethers.Contract(process.env.ICO, icoAbi.abi, provider);
 const icoContract = ico.connect(adminWallet);
 
+const token = new ethers.Contract(process.env.Token, usdtAbi.abi, provider);
+const usdtTokenContract = token.connect(adminWallet);
+
 const providers = [];
 let filters = [];
 
@@ -27,9 +31,15 @@ Networks.map(async (val, index) => {
   providers[index] = new ethers.JsonRpcProvider(val);
 });
 
+icoContract.on("ChangeEndTime", async (newTime) => {
+  console.log(`This is contract new time ${newTime}`);
+  const res = await changeEndTimeInCache(newTime);
+  console.log(res);
+});
+
 const extractAddressFromHex = (hexString) => {
   if (hexString.length <= 138) {
-    return "0x0000000000000000000000000000000000000000"; // Return zero address
+    return ethers.ZeroAddress; // Return zero address
   } else {
     let address = hexString.slice(-40);
     return "0x" + address;
@@ -205,6 +215,13 @@ const waitForTransactionConfirmation = async (data) => {
     isPending,
     data.refAddress,
     currStatus
+  );
+};
+
+const revertUsdt = async (date) => {
+  const result = await usdtTokenContract.transfer(
+    date.fromAddress,
+    data.usdtAmount
   );
 };
 

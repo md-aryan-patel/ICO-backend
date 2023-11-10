@@ -127,13 +127,27 @@ const cacheContractData = async (
 
 const getContractCacheData = async () => {
   const query = { tokenName: "CFNC" };
-  let res;
+
   try {
-    res = await cacheCollection.findOne(query);
+    const res = await cacheCollection.findOne(query);
+    return res;
   } catch (err) {
     console.log(err);
   }
-  return res;
+  return false;
+};
+
+const changeEndTimeInCache = async (newTime) => {
+  const query = { tokenName: "CFNC" };
+  try {
+    const res = await cacheCollection.updateOne(query, {
+      $set: { endTime: newTime },
+    });
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
+  return false;
 };
 
 const getAllPendingTransaction = async () => {
@@ -179,5 +193,6 @@ module.exports = {
   inserUserTransaction,
   getAllPendingTransaction,
   insertUserInPending,
+  changeEndTimeInCache,
   client,
 };
