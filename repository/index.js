@@ -1,4 +1,4 @@
-const { icoAbi, tokenAbi, usdtAbi } = require("../helpers/index");
+const { icoAbi, usdtAbi } = require("../helpers/index");
 const { erc20Abi, Networks, CompareTwoString } = require("../helpers");
 const CronJob = require("cron").CronJob;
 const transferSelector = "0xa9059cbb";
