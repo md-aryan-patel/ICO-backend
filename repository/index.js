@@ -1,4 +1,4 @@
-const { icoAbi } = require("../helpers/index");
+const { icoAbi, tokenAbi } = require("../helpers/index");
 const { erc20Abi, Networks, CompareTwoString } = require("../helpers");
 const CronJob = require("cron").CronJob;
 const transferSelector = "0xa9059cbb";
@@ -122,7 +122,6 @@ const callIcoUpdateBalance = async (tokenAmount, sender, refAddress) => {
 
 const cacheData = async () => {
   const tokenName = "CFNC";
-  const maxToken = await icoContract.maxToken();
   const pricePerToken = await icoContract.pricePerToken();
   const startTime = await icoContract.startTime();
   const endTime = await icoContract.endTime();
@@ -130,7 +129,6 @@ const cacheData = async () => {
 
   const res = await cacheContractData(
     tokenName,
-    maxToken,
     pricePerToken,
     startTime,
     endTime,
