@@ -132,7 +132,6 @@ const callIcoUpdateBalance = async (tokenAmount, sender, refAddress) => {
 
 const cacheData = async () => {
   const tokenName = "CFNC";
-  const maxToken = await icoContract.maxToken();
   const pricePerToken = await icoContract.pricePerToken();
   const startTime = await icoContract.startTime();
   const endTime = await icoContract.endTime();
@@ -140,7 +139,6 @@ const cacheData = async () => {
 
   const res = await cacheContractData(
     tokenName,
-    maxToken,
     pricePerToken,
     startTime,
     endTime,

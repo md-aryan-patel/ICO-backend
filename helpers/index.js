@@ -272,6 +272,19 @@ const icoAbi = {
         {
           indexed: false,
           internalType: "uint256",
+          name: "newTime",
+          type: "uint256",
+        },
+      ],
+      name: "ChangeEndTime",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "uint256",
           name: "amount",
           type: "uint256",
         },
@@ -447,19 +460,6 @@ const icoAbi = {
     {
       inputs: [
         {
-          internalType: "uint64",
-          name: "_startTime",
-          type: "uint64",
-        },
-      ],
-      name: "changeStartTime",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
           internalType: "address",
           name: "account",
           type: "address",
@@ -545,19 +545,6 @@ const icoAbi = {
           internalType: "uint8",
           name: "",
           type: "uint8",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "maxToken",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
         },
       ],
       stateMutability: "view",

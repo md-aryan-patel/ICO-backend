@@ -70,7 +70,6 @@ const insertUserInPending = async (data) => {
 
 const cacheContractData = async (
   tokenName,
-  maxToken,
   pricePerToken,
   startTime,
   endTime,
@@ -78,7 +77,6 @@ const cacheContractData = async (
 ) => {
   const data = {
     tokenName,
-    maxToken,
     pricePerToken,
     startTime,
     endTime,
@@ -103,7 +101,6 @@ const cacheContractData = async (
         {
           $set: {
             tokenName: tokenName,
-            maxToken: maxToken,
             pricePerToken: pricePerToken,
             startTime: startTime,
             endTime: endTime,
