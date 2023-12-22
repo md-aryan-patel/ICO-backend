@@ -15,7 +15,7 @@ const {
   changeEndTimeInCache,
 } = require("../database");
 
-const provider = new ethers.JsonRpcProvider(process.env.sepolia_network);
+const provider = new ethers.JsonRpcProvider(process.env.main_network);
 const adminWallet = new ethers.Wallet(process.env.admin_private_key, provider);
 
 const ico = new ethers.Contract(process.env.ICO, icoAbi.abi, provider);

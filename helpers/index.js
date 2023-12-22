@@ -1405,6 +1405,7 @@ const usdtAbi = {
 };
 
 const Networks = [
+  process.env.main_network,
   process.env.sepolia_network,
   process.env.bsc_network,
   process.env.polygon_network,
